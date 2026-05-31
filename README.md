@@ -23,7 +23,8 @@ Not exacly the best code I ever wrote, but it was the first time trying to get s
 
 ## Example
 
-Check [this](./examples/sample.cpp) for a basic example. Ugly code, but it covers most features which have been implemented so far.
+Check [this](./examples/sample.cpp) for a basic example. Ugly code, but it covers most features which have been implemented so far.  
+You can see it working at [compiler explorer](https://godbolt.org/z/YzdKsWvM3) if you don't have a compatible toolchain locally.
 
 ## Licence
 
