@@ -225,13 +225,13 @@ public:
 
     template <typename In, typename Out = void>
     std::expected<QueryInsert<In, Out>, error_t> make_insert(std::string_view table) {
-        constexpr auto members = define_static_array(std::meta::nonstatic_data_members_of(^^In, std::meta::access_context::unchecked()));
+        static constexpr auto members = define_static_array(std::meta::nonstatic_data_members_of(^^In, std::meta::access_context::unchecked()));
         std::string sql = "INSERT INTO ";
         sql.append(table).append(" (");
         std::string vals = ") VALUES (";
         bool first = true;
         
-        template for (constexpr auto mem : define_static_array(members)) {
+        template for (constexpr auto mem : members) {
             constexpr column_t meta = details::get_col_meta<mem>();
             if constexpr (!meta.ignore) {
                 if (!first) { sql += ", "; vals += ", "; }
@@ -245,9 +245,9 @@ public:
 
         if constexpr (!std::is_same_v<Out, void>) {
             sql += " RETURNING ";
-            constexpr auto out_members = define_static_array(std::meta::nonstatic_data_members_of(^^Out, std::meta::access_context::unchecked()));
+            static constexpr auto out_members = define_static_array(std::meta::nonstatic_data_members_of(^^Out, std::meta::access_context::unchecked()));
             bool first_out = true;
-            template for (constexpr auto mem : define_static_array(out_members)) {
+            template for (constexpr auto mem : out_members) {
                 constexpr column_t meta = details::get_col_meta<mem>();
                 if constexpr (!meta.ignore) {
                     if (!first_out) sql += ", ";
@@ -266,12 +266,12 @@ public:
 
     template <typename In, typename Out = void>
     std::expected<QueryUpdate<In, Out>, error_t> make_update(std::string_view table, std::string_view where_clause = "") {
-        constexpr auto members = define_static_array(std::meta::nonstatic_data_members_of(^^In, std::meta::access_context::unchecked()));
+        static constexpr auto members = define_static_array(std::meta::nonstatic_data_members_of(^^In, std::meta::access_context::unchecked()));
         std::string sql = "UPDATE ";
         sql.append(table).append(" SET ");
 
         bool first_set = true;
-        template for (constexpr auto mem : define_static_array(members)) {
+        template for (constexpr auto mem : members) {
             constexpr column_t meta = details::get_col_meta<mem>();
             if constexpr (!meta.ignore) {
                 constexpr std::string_view mem_name = std::meta::identifier_of(mem);
@@ -290,9 +290,9 @@ public:
 
         if constexpr (!std::is_same_v<Out, void>) {
             sql += " RETURNING ";
-            constexpr auto out_members = define_static_array(std::meta::nonstatic_data_members_of(^^Out, std::meta::access_context::unchecked()));
+            static constexpr auto out_members = define_static_array(std::meta::nonstatic_data_members_of(^^Out, std::meta::access_context::unchecked()));
             bool first_out = true;
-            template for (constexpr auto mem : define_static_array(out_members)) {
+            template for (constexpr auto mem : out_members) {
                 constexpr column_t meta = details::get_col_meta<mem>();
                 if constexpr (!meta.ignore) {
                     if (!first_out) sql += ", ";
@@ -319,9 +319,9 @@ public:
 
         if constexpr (!std::is_same_v<Out, void>) {
             sql += " RETURNING ";
-            constexpr auto out_members = define_static_array(std::meta::nonstatic_data_members_of(^^Out, std::meta::access_context::unchecked()));
+            static constexpr auto out_members = define_static_array(std::meta::nonstatic_data_members_of(^^Out, std::meta::access_context::unchecked()));
             bool first_out = true;
-            template for (constexpr auto mem : define_static_array(out_members)) {
+            template for (constexpr auto mem : out_members) {
                 constexpr column_t meta = details::get_col_meta<mem>();
                 if constexpr (!meta.ignore) {
                     if (!first_out) sql += ", ";
@@ -340,11 +340,11 @@ public:
 
     template <typename Out>
     std::expected<QueryExtract<Out>, error_t> make_select(std::string_view table, std::string_view where_clause = "") {
-        constexpr auto members = define_static_array(std::meta::nonstatic_data_members_of(^^Out, std::meta::access_context::unchecked()));
+        static constexpr auto members = define_static_array(std::meta::nonstatic_data_members_of(^^Out, std::meta::access_context::unchecked()));
         std::string sql = "SELECT ";
         bool first = true;
         
-        template for (constexpr auto mem : define_static_array(members)) {
+        template for (constexpr auto mem : members) {
             constexpr column_t meta = details::get_col_meta<mem>();
             if constexpr (!meta.ignore) {
                 if (!first) sql += ", ";
@@ -411,12 +411,12 @@ public:
 
             std::vector<Out> results;
             int rc;
-            constexpr auto members = define_static_array(std::meta::nonstatic_data_members_of(^^Out, std::meta::access_context::unchecked()));
+            static constexpr auto members = define_static_array(std::meta::nonstatic_data_members_of(^^Out, std::meta::access_context::unchecked()));
 
             while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
                 Out row;
                 int col = 0;
-                template for (constexpr auto mem : define_static_array(members)) {
+                template for (constexpr auto mem : members) {
                     constexpr column_t meta = details::get_col_meta<mem>();
                     if constexpr (!meta.ignore) {
                         using FieldType = std::remove_cvref_t<decltype(row.[:mem:])>;
@@ -448,8 +448,8 @@ public:
             sqlite3_reset(stmt);
             sqlite3_clear_bindings(stmt);
             int bind_idx = 1;
-            constexpr auto members = define_static_array(std::meta::nonstatic_data_members_of(^^In, std::meta::access_context::unchecked()));
-            template for (constexpr auto mem : define_static_array(members)) {
+            static constexpr auto members = define_static_array(std::meta::nonstatic_data_members_of(^^In, std::meta::access_context::unchecked()));
+            template for (constexpr auto mem : members) {
                 constexpr column_t meta = details::get_col_meta<mem>();
                 if constexpr (!meta.ignore) {
                     using ValType = std::remove_cvref_t<decltype(obj.[:mem:])>;
@@ -469,12 +469,12 @@ public:
             } else {
                 std::vector<Out> results;
                 int rc;
-                constexpr auto out_members = define_static_array(std::meta::nonstatic_data_members_of(^^Out, std::meta::access_context::unchecked()));
+                static constexpr auto out_members = define_static_array(std::meta::nonstatic_data_members_of(^^Out, std::meta::access_context::unchecked()));
 
                 while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
                     Out row;
                     int col = 0;
-                    template for (constexpr auto mem : define_static_array(out_members)) {
+                    template for (constexpr auto mem : out_members) {
                         constexpr column_t meta = details::get_col_meta<mem>();
                         if constexpr (!meta.ignore) {
                             using FieldType = std::remove_cvref_t<decltype(row.[:mem:])>;
@@ -510,9 +510,9 @@ public:
             int bind_idx = 1;
             bool bind_ok = true;
 
-            constexpr auto members = define_static_array(std::meta::nonstatic_data_members_of(^^In, std::meta::access_context::unchecked()));
+            static constexpr auto members = define_static_array(std::meta::nonstatic_data_members_of(^^In, std::meta::access_context::unchecked()));
 
-            template for (constexpr auto mem : define_static_array(members)) {
+            template for (constexpr auto mem : members) {
                 constexpr column_t meta = details::get_col_meta<mem>();
                 if constexpr (!meta.ignore) {
                     using ValType = std::remove_cvref_t<decltype(obj.[:mem:])>;
@@ -532,12 +532,12 @@ public:
             } else {
                 std::vector<Out> results;
                 int rc;
-                constexpr auto out_members = define_static_array(std::meta::nonstatic_data_members_of(^^Out, std::meta::access_context::unchecked()));
+                static constexpr auto out_members = define_static_array(std::meta::nonstatic_data_members_of(^^Out, std::meta::access_context::unchecked()));
 
                 while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
                     Out row;
                     int col = 0;
-                    template for (constexpr auto mem : define_static_array(out_members)) {
+                    template for (constexpr auto mem : out_members) {
                         constexpr column_t meta = details::get_col_meta<mem>();
                         if constexpr (!meta.ignore) {
                             using FieldType = std::remove_cvref_t<decltype(row.[:mem:])>;
@@ -590,7 +590,7 @@ public:
                 while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
                     Out row;
                     int col = 0;
-                    template for (constexpr auto mem : define_static_array(out_members)) {
+                    template for (constexpr auto mem : out_members) {
                         constexpr column_t meta = details::get_col_meta<mem>();
                         if constexpr (!meta.ignore) {
                             using FieldType = std::remove_cvref_t<decltype(row.[:mem:])>;
