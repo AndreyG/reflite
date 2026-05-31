@@ -42,32 +42,12 @@ struct column_t {
 
 namespace details{
 
-template <column_t cfg> struct Sql3 {};
-
-template <typename T>
-struct ExtractSql3 {
-    static constexpr bool match = false;
-    static constexpr column_t config{};
-};
-
-template <column_t cfg>
-struct ExtractSql3<Sql3<cfg>> {
-    static constexpr bool match = true;
-    static constexpr column_t config = cfg;
-};
-
 template <std::meta::info mem>
 consteval column_t get_col_meta() {
-    column_t result{};
-    constexpr auto annots = define_static_array(std::meta::annotations_of(mem));
-    template for (constexpr auto a : define_static_array(annots)) {
-        using AttrRawType = typename [: std::meta::type_of(a) :];
-        using AttrType = std::remove_cvref_t<AttrRawType>;
-        if constexpr (ExtractSql3<AttrType>::match) {
-            result = ExtractSql3<AttrType>::config;
-        }
-    }
-    return result;
+    auto annots = std::meta::annotations_of_with_type(mem, ^^column_t);
+    if (annots.empty())
+        return {};
+    return extract<column_t>(annots.front());
 }
 
 template <typename T, db_type_t ST = db_type_t::Auto> 
@@ -140,7 +120,7 @@ struct SqliteTypeMap<std::optional<T>, ST> {
 
 }
 
-template <column_t cfg> inline constexpr details::Sql3<cfg> sql;
+using sql = column_t;
 
 
 class Database {
