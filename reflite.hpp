@@ -419,7 +419,7 @@ public:
                 template for (constexpr auto mem : members) {
                     constexpr column_t meta = details::get_col_meta<mem>();
                     if constexpr (!meta.ignore) {
-                        using FieldType = std::remove_cvref_t<decltype(row.[:mem:])>;
+                        using FieldType = [:remove_cvref(type_of(mem)):];
                         row.[:mem:] = details::SqliteTypeMap<FieldType, meta.type>::Extract(stmt, col++);
                     }
                 }
@@ -477,7 +477,7 @@ public:
                     template for (constexpr auto mem : out_members) {
                         constexpr column_t meta = details::get_col_meta<mem>();
                         if constexpr (!meta.ignore) {
-                            using FieldType = std::remove_cvref_t<decltype(row.[:mem:])>;
+                            using FieldType = [:remove_cvref(type_of(mem)):];;
                             row.[:mem:] = details::SqliteTypeMap<FieldType, meta.type>::Extract(stmt, col++);
                         }
                     }
@@ -540,7 +540,7 @@ public:
                     template for (constexpr auto mem : out_members) {
                         constexpr column_t meta = details::get_col_meta<mem>();
                         if constexpr (!meta.ignore) {
-                            using FieldType = std::remove_cvref_t<decltype(row.[:mem:])>;
+                            using FieldType = [:remove_cvref(type_of(mem)):];
                             row.[:mem:] = details::SqliteTypeMap<FieldType, meta.type>::Extract(stmt, col++);
                         }
                     }
@@ -593,7 +593,7 @@ public:
                     template for (constexpr auto mem : out_members) {
                         constexpr column_t meta = details::get_col_meta<mem>();
                         if constexpr (!meta.ignore) {
-                            using FieldType = std::remove_cvref_t<decltype(row.[:mem:])>;
+                            using FieldType = [:remove_cvref(type_of(mem)):];
                             row.[:mem:] = details::SqliteTypeMap<FieldType, meta.type>::Extract(stmt, col++);
                         }
                     }
