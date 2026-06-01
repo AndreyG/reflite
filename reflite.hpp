@@ -42,8 +42,7 @@ struct column_t {
 
 namespace details{
 
-template <std::meta::info mem>
-consteval column_t get_col_meta() {
+consteval column_t get_col_meta(std::meta::info mem) {
     auto annots = std::meta::annotations_of(mem);
     for (auto annot : annots) {
         if (is_same_type(remove_const(type_of(annot)), ^^column_t))
@@ -214,7 +213,7 @@ public:
         bool first = true;
         
         template for (constexpr auto mem : members) {
-            constexpr column_t meta = details::get_col_meta<mem>();
+            constexpr column_t meta = details::get_col_meta(mem);
             if constexpr (!meta.ignore) {
                 if (!first) { sql += ", "; vals += ", "; }
                 constexpr std::string_view mem_name = std::meta::identifier_of(mem);
@@ -230,7 +229,7 @@ public:
             static constexpr auto out_members = define_static_array(std::meta::nonstatic_data_members_of(^^Out, std::meta::access_context::unchecked()));
             bool first_out = true;
             template for (constexpr auto mem : out_members) {
-                constexpr column_t meta = details::get_col_meta<mem>();
+                constexpr column_t meta = details::get_col_meta(mem);
                 if constexpr (!meta.ignore) {
                     if (!first_out) sql += ", ";
                     constexpr std::string_view mem_name = std::meta::identifier_of(mem);
@@ -254,7 +253,7 @@ public:
 
         bool first_set = true;
         template for (constexpr auto mem : members) {
-            constexpr column_t meta = details::get_col_meta<mem>();
+            constexpr column_t meta = details::get_col_meta(mem);
             if constexpr (!meta.ignore) {
                 constexpr std::string_view mem_name = std::meta::identifier_of(mem);
                 std::string_view col_name = meta.name[0] != '\0' ? std::string_view(meta.name) : mem_name;
@@ -275,7 +274,7 @@ public:
             static constexpr auto out_members = define_static_array(std::meta::nonstatic_data_members_of(^^Out, std::meta::access_context::unchecked()));
             bool first_out = true;
             template for (constexpr auto mem : out_members) {
-                constexpr column_t meta = details::get_col_meta<mem>();
+                constexpr column_t meta = details::get_col_meta(mem);
                 if constexpr (!meta.ignore) {
                     if (!first_out) sql += ", ";
                     constexpr std::string_view mem_name = std::meta::identifier_of(mem);
@@ -304,7 +303,7 @@ public:
             static constexpr auto out_members = define_static_array(std::meta::nonstatic_data_members_of(^^Out, std::meta::access_context::unchecked()));
             bool first_out = true;
             template for (constexpr auto mem : out_members) {
-                constexpr column_t meta = details::get_col_meta<mem>();
+                constexpr column_t meta = details::get_col_meta(mem);
                 if constexpr (!meta.ignore) {
                     if (!first_out) sql += ", ";
                     constexpr std::string_view mem_name = std::meta::identifier_of(mem);
@@ -327,7 +326,7 @@ public:
         bool first = true;
         
         template for (constexpr auto mem : members) {
-            constexpr column_t meta = details::get_col_meta<mem>();
+            constexpr column_t meta = details::get_col_meta(mem);
             if constexpr (!meta.ignore) {
                 if (!first) sql += ", ";
                 constexpr std::string_view mem_name = std::meta::identifier_of(mem);
@@ -399,7 +398,7 @@ public:
                 Out row;
                 int col = 0;
                 template for (constexpr auto mem : members) {
-                    constexpr column_t meta = details::get_col_meta<mem>();
+                    constexpr column_t meta = details::get_col_meta(mem);
                     if constexpr (!meta.ignore) {
                         using FieldType = [:remove_cvref(type_of(mem)):];
                         row.[:mem:] = details::SqliteTypeMap<FieldType, meta.type>::Extract(stmt, col++);
@@ -432,7 +431,7 @@ public:
             int bind_idx = 1;
             static constexpr auto members = define_static_array(std::meta::nonstatic_data_members_of(^^In, std::meta::access_context::unchecked()));
             template for (constexpr auto mem : members) {
-                constexpr column_t meta = details::get_col_meta<mem>();
+                constexpr column_t meta = details::get_col_meta(mem);
                 if constexpr (!meta.ignore) {
                     using ValType = std::remove_cvref_t<decltype(obj.[:mem:])>;
                     if (details::SqliteTypeMap<ValType, meta.type>::Bind(stmt, bind_idx++, obj.[:mem:]) != SQLITE_OK) {
@@ -457,7 +456,7 @@ public:
                     Out row;
                     int col = 0;
                     template for (constexpr auto mem : out_members) {
-                        constexpr column_t meta = details::get_col_meta<mem>();
+                        constexpr column_t meta = details::get_col_meta(mem);
                         if constexpr (!meta.ignore) {
                             using FieldType = [:remove_cvref(type_of(mem)):];;
                             row.[:mem:] = details::SqliteTypeMap<FieldType, meta.type>::Extract(stmt, col++);
@@ -495,7 +494,7 @@ public:
             static constexpr auto members = define_static_array(std::meta::nonstatic_data_members_of(^^In, std::meta::access_context::unchecked()));
 
             template for (constexpr auto mem : members) {
-                constexpr column_t meta = details::get_col_meta<mem>();
+                constexpr column_t meta = details::get_col_meta(mem);
                 if constexpr (!meta.ignore) {
                     using ValType = std::remove_cvref_t<decltype(obj.[:mem:])>;
                     if (details::SqliteTypeMap<ValType, meta.type>::Bind(stmt, bind_idx++, obj.[:mem:]) != SQLITE_OK) return std::unexpected{error_t::BindError};
@@ -520,7 +519,7 @@ public:
                     Out row;
                     int col = 0;
                     template for (constexpr auto mem : out_members) {
-                        constexpr column_t meta = details::get_col_meta<mem>();
+                        constexpr column_t meta = details::get_col_meta(mem);
                         if constexpr (!meta.ignore) {
                             using FieldType = [:remove_cvref(type_of(mem)):];
                             row.[:mem:] = details::SqliteTypeMap<FieldType, meta.type>::Extract(stmt, col++);
@@ -573,7 +572,7 @@ public:
                     Out row;
                     int col = 0;
                     template for (constexpr auto mem : out_members) {
-                        constexpr column_t meta = details::get_col_meta<mem>();
+                        constexpr column_t meta = details::get_col_meta(mem);
                         if constexpr (!meta.ignore) {
                             using FieldType = [:remove_cvref(type_of(mem)):];
                             row.[:mem:] = details::SqliteTypeMap<FieldType, meta.type>::Extract(stmt, col++);
