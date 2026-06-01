@@ -44,10 +44,12 @@ namespace details{
 
 template <std::meta::info mem>
 consteval column_t get_col_meta() {
-    auto annots = std::meta::annotations_of_with_type(mem, ^^column_t);
-    if (annots.empty())
-        return {};
-    return extract<column_t>(annots.front());
+    auto annots = std::meta::annotations_of(mem);
+    for (auto annot : annots) {
+        if (is_same_type(remove_const(type_of(annot)), ^^column_t))
+            return extract<column_t>(annot);
+    }
+    return {};
 }
 
 template <typename T, db_type_t ST = db_type_t::Auto> 
